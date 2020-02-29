@@ -11,7 +11,10 @@ const float    potValue   = 10000;
 const uint16_t wiperResistance = 80;
 
 // Configuration Stuff
-int configParameters[] = {1, 0, 0, 1, 0, 300, 30, 5}; // Default Config Parameters
+int configParameters[] = {1, 0, 0, 1, 0, 2, 30, 5}; // Default Config Parameters
+
+// Timing Vars
+unsigned long previousMillis = 0;
 
 void setup() {
   Serial.begin(9600); // Serial Init
@@ -35,9 +38,9 @@ void setup() {
   // Check if RTC battery died
   if (rtc.lostPower()) {
     Serial.println("RTC lost power, send time in format: YYYYMMDDHHMMSS");  // Request time to be sent in format
-    while (true) {
+    // while (true) {
     // rtc.adjust(DateTime(F(__DATE__), F(__TIME__))); REPLACE THIS (With a function to update time over serial)
-    }
+    // }
   }
 
   // Initialize direct port registers in output mode for ports A, C, and L
@@ -80,6 +83,15 @@ void loop() {
 
     SetTube(5, nthdig(1, now.second())); // Displays the current second on the tubes
     SetTube(6, nthdig(0, now.second()));
+
+    if (configParameters[2] == 2) {
+      int currentMillis = millis();
+      if ((currentMillis - previousMillis) >= 1000) {
+        digitalWrite(8, !(digitalRead(8)));
+        digitalWrite(9, !(digitalRead(9)));
+        previousMillis = millis();
+      }
+    }
 
     delay(10);  // Stability delay
 }
