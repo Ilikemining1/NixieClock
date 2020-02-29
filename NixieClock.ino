@@ -47,9 +47,15 @@ void setup() {
 
   byte configState = EEPROM.read(0); // Check if EEPROM contains config data, aka the first byte is a 1. If not, load the hardcoded defaults
   if (configState == 0) {
-    // Replace with code to program defaults
+    for (int i = 0; i < 8; i++) {
+      EEPROM.write(i, configParameters[i]);  // Write initial config parameters to EEPROM
+    }
+    Serial.println("Initial EEPROM Programming Done");
   } else {
-    // Replace with code to overwrite hardcoded defaults in memory
+    for (int i = 0; i < 8; i++) {
+      configParameters[i] = EEPROM.read(i); // Load current settings from EEPROM
+    }
+    Serial.println("Settings Restored from EEPROM");  
   }
 
 }
