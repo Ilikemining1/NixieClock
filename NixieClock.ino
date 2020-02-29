@@ -61,6 +61,14 @@ void setup() {
     Serial.println("Settings Restored from EEPROM");  
   }
 
+  if (configParameters[2] == 1) {  // If set to solid on mode, turn seperators on fixed
+    digitalWrite(8, HIGH);
+    digitalWrite(9, HIGH);
+  } else if (configParameters[2] == 0) {  // Keep pins from floating 
+    digitalWrite(8, LOW);
+    digitalWrite(9, LOW);
+  }
+
 }
 
 void loop() {
@@ -84,7 +92,7 @@ void loop() {
     SetTube(5, nthdig(1, now.second())); // Displays the current second on the tubes
     SetTube(6, nthdig(0, now.second()));
 
-    if (configParameters[2] == 2) {
+    if (configParameters[2] == 2) {  // Timing for toggling seperators.  Counts changes in milliseconds and bases timing on that
       int currentMillis = millis();
       if ((currentMillis - previousMillis) >= 1000) {
         digitalWrite(8, !(digitalRead(8)));
