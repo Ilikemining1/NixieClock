@@ -11,7 +11,7 @@ const float    potValue   = 10000;
 const uint16_t wiperResistance = 80;
 
 // Configuration Stuff
-int configParameters[] = {1, 0, 0, 1, 0, 2, 30, 5}; // Default Config Parameters
+int configParameters[] = {1, 0, 1, 1, 0, 2, 30, 5}; // Default Config Parameters
 
 // Timing Vars
 unsigned long previousMillis = 0;
@@ -93,7 +93,7 @@ void loop() {
     SetTube(6, nthdig(0, now.second()));
 
     if (configParameters[2] == 2) {  // Timing for toggling seperators.  Counts changes in milliseconds and bases timing on that
-      int currentMillis = millis();
+      unsigned long currentMillis = millis();
       if ((currentMillis - previousMillis) >= 1000) {
         digitalWrite(8, !(digitalRead(8)));
         digitalWrite(9, !(digitalRead(9)));
