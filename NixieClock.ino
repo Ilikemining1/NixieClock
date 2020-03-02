@@ -100,7 +100,7 @@ void loop() {
 
     while (Serial.available() > 0) {
       byte bufferCount = Serial.available();
-      char serBuffer[bufferCount];
+      int serBuffer[bufferCount];
       for (int i = 0; i < bufferCount; i++) {
         serBuffer[i] = Serial.read();
       }
@@ -152,25 +152,13 @@ int nthdig(int n, int k) {
   return k % 10;
 }
 
-void configMode(char *parameters, unsigned int bufferCount) {
+void configMode(int *parameters, byte bufferCount) {
   switch (parameters[0]) {
     case 't':
-      Serial.println("Time Set: Send time in YYYYMMDDHHMMSS format");
-      if (bufferCount = 15) {
-        int yr = (parameters[1] * 1000) + (parameters[2] * 100) + (parameters[3] * 10) + parameters[4];
-        Serial.println(yr);
-        int mnth = (parameters[5] * 10) + parameters[6];
-        Serial.println(mnth);
-        int dy = (parameters[7] * 10) + parameters[8];
-        Serial.println(dy);
-        int hr = (parameters[9] * 10) + parameters[10];
-        Serial.println(hr);
-        int mn = (parameters[11] * 10) + parameters[12];
-        Serial.println(mn);
-        int sc = (parameters[9] * 13) + parameters[14];
-        Serial.println(sc);
-      } else {
-        Serial.println("Invalid parameter format");
+      Serial.print("Time Set: Send time in YYYYMMDDHHMMSS format, bytes in buffer: ");
+      Serial.println(bufferCount);
+      for (int i = 1; i < bufferCount; i++) {
+        Serial.println(parameters[i] - '0');
       }
       break;
     default:
