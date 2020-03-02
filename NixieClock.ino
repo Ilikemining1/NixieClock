@@ -11,7 +11,7 @@ const float    potValue   = 10000;
 const uint16_t wiperResistance = 80;
 
 // Configuration Stuff
-int configParameters[] = {1, 0, 1, 1, 0, 2, 30, 5}; // Default Config Parameters
+int configParameters[] = {1, 0, 1, 1, 0, 2, 30, 5}; // Default Config Parameters(Configured, 24 hour time, colon mode)
 
 // Timing Vars
 unsigned long previousMillis = 0;
@@ -98,15 +98,15 @@ void loop() {
       }
     }
 
-    while (Serial.available() > 0) {
-      delay(10);
-      byte bufferCount = Serial.available();
-      int serBuffer[bufferCount];
-      serBuffer[0] = Serial.read();
-      for (int i = 1; i < bufferCount; i++) {
+    while (Serial.available() > 0) {  // Check if anything has been received on the serial port, add it to the int buffer array
+      delay(10); // Buffer fill delay
+      byte bufferCount = Serial.available(); // byte with length of recieved bytes
+      int serBuffer[bufferCount]; // Generate array with said length
+      serBuffer[0] = Serial.read();  // Read the char value into the first array pos
+      for (int i = 1; i < bufferCount; i++) {  // Get all the other values as int
         serBuffer[i] = (Serial.read() - '0');
       }
-      configMode(serBuffer, bufferCount);
+      configMode(serBuffer, bufferCount);  // Send buffer to the config function
     }
 
     delay(10);  // Stability delay
@@ -154,10 +154,10 @@ int nthdig(int n, int k) {
   return k % 10;
 }
 
-void configMode(int *parameters, byte bufferCount) {
-  switch (parameters[0]) {
+void configMode(int *parameters, byte bufferCount) {  // Takes a pointer to the array and the length of said array as parameters
+  switch (parameters[0]) {  // Check the first int and see if it matches any commands
     case 't':
-      Serial.print("Bytes in buffer: ");
+      Serial.print("Bytes in buffer: ");  // Adjust time to recieved value with debugging stuff
       Serial.println(bufferCount);
       if (bufferCount == 15) {
         int yr = (parameters[1] * 1000) + (parameters[2] * 100) + (parameters[3] * 10) + parameters[4];
