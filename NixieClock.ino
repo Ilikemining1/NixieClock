@@ -99,10 +99,12 @@ void loop() {
     }
 
     while (Serial.available() > 0) {
+      delay(10);
       byte bufferCount = Serial.available();
       int serBuffer[bufferCount];
-      for (int i = 0; i < bufferCount; i++) {
-        serBuffer[i] = Serial.read();
+      serBuffer[0] = Serial.read();
+      for (int i = 1; i < bufferCount; i++) {
+        serBuffer[i] = (Serial.read() - '0');
       }
       configMode(serBuffer, bufferCount);
     }
@@ -155,10 +157,19 @@ int nthdig(int n, int k) {
 void configMode(int *parameters, byte bufferCount) {
   switch (parameters[0]) {
     case 't':
-      Serial.print("Time Set: Send time in YYYYMMDDHHMMSS format, bytes in buffer: ");
+      Serial.print("Bytes in buffer: ");
       Serial.println(bufferCount);
-      for (int i = 1; i < bufferCount; i++) {
-        Serial.println(parameters[i] - '0');
+      if (bufferCount == 15) {
+        int yr = (parameters[1] * 1000) + (parameters[2] * 100) + (parameters[3] * 10) + parameters[4];
+        int mnth = (parameters[5] * 10) + parameters[6];
+        int dy = (parameters[7] * 10) + parameters[8];
+        int hr = (parameters[9] * 10) + parameters[10];
+        int mn = (parameters[11] * 10) + parameters[12];
+        int sc = (parameters[13] * 10) + parameters[14];
+        rtc.adjust(DateTime(yr, mnth, dy, hr, mn, sc));
+        Serial.println("Date and Time set");
+      } else {
+        Serial.println("Invalid parameter format");
       }
       break;
     default:
