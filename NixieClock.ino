@@ -157,8 +157,6 @@ int nthdig(int n, int k) {
 void configMode(int *parameters, byte bufferCount) {  // Takes a pointer to the array and the length of said array as parameters
   switch (parameters[0]) {  // Check the first int and see if it matches any commands
     case 't':
-      Serial.print("Bytes in buffer: ");  // Adjust time to recieved value with debugging stuff
-      Serial.println(bufferCount);
       if (bufferCount == 15) {
         int yr = (parameters[1] * 1000) + (parameters[2] * 100) + (parameters[3] * 10) + parameters[4];
         int mnth = (parameters[5] * 10) + parameters[6];
@@ -168,16 +166,38 @@ void configMode(int *parameters, byte bufferCount) {  // Takes a pointer to the 
         int sc = (parameters[13] * 10) + parameters[14];
         if ((2000 < yr) && (yr < 2200) && (0 < mnth) && (mnth < 13) && (0 < dy) && (dy < 32) && (-1 < hr) && (hr < 25) && (-1 < mn) && (mn < 60) && (-1 < sc) && (sc < 60)) {  // Bounds Checking
           rtc.adjust(DateTime(yr, mnth, dy, hr, mn, sc));
-          Serial.println("Date and Time set");
+          indicatorMessage(1, 300);
         } else {
-          Serial.println("Invalid Date or Time");
+          break;
         }  
       } else {
-        Serial.println("Invalid parameter format");
+         break;
       }
       break;
     default:
       Serial.println("Invalid Configuration Choice");
       break;
   }
+}
+
+void indicatorMessage(int combination, int ms) {
+  int pin8 = digitalRead(8);
+  int pin9 = digitalRead(9);
+  switch (combination) {
+    case 1:
+      digitalWrite(8, LOW);
+      digitalWrite(9, LOW);
+      delay(ms);
+      digitalWrite(8, HIGH);
+      digitalWrite(9, HIGH);
+      delay(ms);
+      digitalWrite(8, LOW);
+      digitalWrite(9, LOW);
+      delay(ms);
+      digitalWrite(8, HIGH);
+      digitalWrite(9, HIGH);
+      break;
+  }
+  digitalWrite(8, pin8);
+  digitalWrite(9, pin9);
 }
