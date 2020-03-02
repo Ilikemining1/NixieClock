@@ -166,8 +166,12 @@ void configMode(int *parameters, byte bufferCount) {  // Takes a pointer to the 
         int hr = (parameters[9] * 10) + parameters[10];
         int mn = (parameters[11] * 10) + parameters[12];
         int sc = (parameters[13] * 10) + parameters[14];
-        rtc.adjust(DateTime(yr, mnth, dy, hr, mn, sc));
-        Serial.println("Date and Time set");
+        if ((2000 < yr < 2200) && (0 < mnth < 13) && (0 < dy < 32) && (-1 < hr < 25) && (-1 < mn < 60) && (-1 < sc < 60)) {  // Bounds Checking
+          rtc.adjust(DateTime(yr, mnth, dy, hr, mn, sc));
+          Serial.println("Date and Time set");
+        } else {
+          Serial.println("Invalid Date or Time");
+        }  
       } else {
         Serial.println("Invalid parameter format");
       }
