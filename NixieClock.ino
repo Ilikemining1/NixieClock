@@ -155,7 +155,23 @@ int nthdig(int n, int k) {
 void configMode(char *parameters, unsigned int bufferCount) {
   switch (parameters[0]) {
     case 't':
-      Serial.println("Time Config");
+      Serial.println("Time Set: Send time in YYYYMMDDHHMMSS format");
+      if (bufferCount = 15) {
+        int yr = (parameters[1] * 1000) + (parameters[2] * 100) + (parameters[3] * 10) + parameters[4];
+        Serial.println(yr);
+        int mnth = (parameters[5] * 10) + parameters[6];
+        Serial.println(mnth);
+        int dy = (parameters[7] * 10) + parameters[8];
+        Serial.println(dy);
+        int hr = (parameters[9] * 10) + parameters[10];
+        Serial.println(hr);
+        int mn = (parameters[11] * 10) + parameters[12];
+        Serial.println(mn);
+        int sc = (parameters[9] * 13) + parameters[14];
+        Serial.println(sc);
+      } else {
+        Serial.println("Invalid parameter format");
+      }
       break;
     default:
       Serial.println("Invalid Configuration Choice");
