@@ -38,9 +38,6 @@ void setup() {
   // Check if RTC battery died
   if (rtc.lostPower()) {
     Serial.println("RTC lost power, send time in format: YYYYMMDDHHMMSS");  // Request time to be sent in format
-    // while (true) {
-    // rtc.adjust(DateTime(F(__DATE__), F(__TIME__))); REPLACE THIS (With a function to update time over serial)
-    // }
   }
 
   // Initialize direct port registers in output mode for ports A, C, and L
@@ -98,6 +95,17 @@ void loop() {
         digitalWrite(8, !(digitalRead(8)));
         digitalWrite(9, !(digitalRead(9)));
         previousMillis = millis();
+      }
+    }
+
+    while (Serial.available() > 0) {
+      char serBuffer[Serial.available()];
+      int bufferCount = Serial.available();
+      for (int i = 0; i < Serial.available(); i++) {
+        serBuffer[i] = Serial.read();
+      }
+      for (int i = 0; i < bufferCount; i++) {
+        Serial.println(serBuffer[i]);
       }
     }
 
