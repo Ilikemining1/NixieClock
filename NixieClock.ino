@@ -17,7 +17,7 @@ int configParameters[] = {1, 0, 1, 1, 0, 2, 30, 5}; // Default Config Parameters
 unsigned long previousMillis = 0;
 
 void setup() {
-  Serial.begin(9600); // Serial Init
+  Serial.begin(115200); // Serial Init
 
   pinMode(8, OUTPUT); // Seperator Control Pins
   pinMode(9, OUTPUT);
@@ -99,11 +99,12 @@ void loop() {
     }
 
     while (Serial.available() > 0) {
-      char serBuffer[Serial.available()];
-      int bufferCount = Serial.available();
-      for (int i = 0; i < Serial.available(); i++) {
+      byte bufferCount = Serial.available();
+      char serBuffer[bufferCount];
+      for (int i = 0; i < bufferCount; i++) {
         serBuffer[i] = Serial.read();
       }
+      Serial.println(bufferCount);
       for (int i = 0; i < bufferCount; i++) {
         Serial.println(serBuffer[i]);
       }
