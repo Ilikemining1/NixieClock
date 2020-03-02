@@ -104,10 +104,7 @@ void loop() {
       for (int i = 0; i < bufferCount; i++) {
         serBuffer[i] = Serial.read();
       }
-      Serial.println(bufferCount);
-      for (int i = 0; i < bufferCount; i++) {
-        Serial.println(serBuffer[i]);
-      }
+      configMode(serBuffer, bufferCount);
     }
 
     delay(10);  // Stability delay
@@ -153,4 +150,15 @@ int nthdig(int n, int k) {
   while (n--)
     k /= 10;
   return k % 10;
+}
+
+void configMode(char *parameters, unsigned int bufferCount) {
+  switch (parameters[0]) {
+    case 't':
+      Serial.println("Time Config");
+      break;
+    default:
+      Serial.println("Invalid Configuration Choice");
+      break;
+  }
 }
