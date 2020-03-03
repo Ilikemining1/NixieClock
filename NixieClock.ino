@@ -11,7 +11,7 @@ const float    potValue   = 10000;
 const uint16_t wiperResistance = 80;
 
 // Configuration Stuff
-int configParameters[] = {1, 0, 1, 1, 0, 2, 30, 5}; // Default Config Parameters(Configured, 24 hour time, colon mode)
+int configParameters[] = {1, 0, 1, 1, 0, 2, 30, 5}; // Default Config Parameters(Configured, 24 hour time, colon mode, dim by light level, dim by time, date display time, anti tube damage)
 
 // Timing Vars
 unsigned long previousMillis = 0;
@@ -21,6 +21,9 @@ void setup() {
 
   pinMode(8, OUTPUT); // Seperator Control Pins
   pinMode(9, OUTPUT);
+
+  vcon.begin(10); // Digital Pot Init
+  vcon.setWiper( ((680 - wiperResistance) / potValue) * 255); // Initial Value of 680 Ohm (170v)
 
   // Initialize RTC if available, if not, enter seperator blink error code, high speed flashing
   if (! rtc.begin()) {
@@ -32,10 +35,7 @@ void setup() {
     }
   }
 
-  vcon.begin(10); // Digital Pot Init
-  vcon.setWiper( ((680 - wiperResistance) / potValue) * 255); // Initial Value of 680 Ohm (170v)
-
-  // Check if RTC battery died
+  // Check if RTC battery died, if so, force time to be set before anything else can happen.  Seperators blink at high speed
   if (rtc.lostPower()) {
     while (true) {
       bool breakLoop = false;
@@ -68,7 +68,7 @@ void setup() {
   byte configState = EEPROM.read(0); // Check if EEPROM contains config data, aka the first byte is a 1. If not, load the hardcoded defaults
   if (configState == 0) {
     for (int i = 0; i < 8; i++) {
-      EEPROM.update(i, configParameters[i]);  // Write initial config parameters to EEPROM
+      EEPROM.update(i, configParameters[i]);  // Write initial config parameters to EEPROM.  Update is used to save necessary EEPROM cycles
     }
     Serial.println("Initial EEPROM Programming Done");
   } else {
@@ -129,6 +129,12 @@ void loop() {
     configMode(serBuffer, bufferCount);  // Send buffer to the config function
   }
 
+  if (configParameters[3] == 1) {  // Automatic brightness compensation based on LDR on analog pin A0.  Varies boost output based on room brightness
+    int roomlight = analogRead(A0);  // Get analog value
+    int newOhms = ((-4 / 3) * roomlight) + 1613;  // Do some algebra to find new resistance value
+    vcon.setWiper( ((newOhms - wiperResistance) / potValue) * 255);  // Update digital pot value
+  }
+  
   delay(10);  // Stability delay
 }
 
@@ -136,13 +142,13 @@ void loop() {
 
 // Set tube function
 void SetTube(int tube, int num) {
-  int a = PORTA >> 4;
+  int a = PORTA >> 4;  // Get the top 4 bits of the IO ports
   int c = PORTC >> 4;
   int l = PORTL >> 4;
-  if (tube % 2 == 0) {
+  if (tube % 2 == 0) {  // Even Tubes
     switch (tube) {
       case 2:
-        PORTA = (PORTA - (16 * a)) + (16 * num);
+        PORTA = (PORTA - (16 * a)) + (16 * num); // Subtract the top value and add a new one based on num
         break;
       case 4:
         PORTC = (PORTC - (16 * c)) + (16 * num);
@@ -152,9 +158,9 @@ void SetTube(int tube, int num) {
         break;
     }
   } else {
-    switch (tube) {
+    switch (tube) {  // Odd Tubes
       case 1:
-        PORTA = (PORTA - (PORTA - (16 * a))) + num;
+        PORTA = (PORTA - (PORTA - (16 * a))) + num;  // Calculate and subtract the bottom value from the top and add a new one
         break;
       case 3:
         PORTC = (PORTC - (PORTC - (16 * c))) + num;
@@ -178,35 +184,35 @@ void configMode(int *parameters, byte bufferCount) {  // Takes a pointer to the 
   switch (parameters[0]) {  // Check the first int and see if it matches any commands
     case 't':
       if (bufferCount == 15) {
-        int yr = (parameters[1] * 1000) + (parameters[2] * 100) + (parameters[3] * 10) + parameters[4];
+        int yr = (parameters[1] * 1000) + (parameters[2] * 100) + (parameters[3] * 10) + parameters[4]; // Single digit to int parsing into vars
         int mnth = (parameters[5] * 10) + parameters[6];
         int dy = (parameters[7] * 10) + parameters[8];
         int hr = (parameters[9] * 10) + parameters[10];
         int mn = (parameters[11] * 10) + parameters[12];
         int sc = (parameters[13] * 10) + parameters[14];
         if ((2000 < yr) && (yr < 2200) && (0 < mnth) && (mnth < 13) && (0 < dy) && (dy < 32) && (-1 < hr) && (hr < 25) && (-1 < mn) && (mn < 60) && (-1 < sc) && (sc < 60)) {  // Bounds Checking
-          rtc.adjust(DateTime(yr, mnth, dy, hr, mn, sc));
-          indicatorMessage(1, 300, 2);
+          rtc.adjust(DateTime(yr, mnth, dy, hr, mn, sc));  // Update the RTC if numbers are within bounds
+          indicatorMessage(1, 300, 2);  // Give indication that the time was updated
         } else {
-          indicatorMessage(2, 500, 3);
+          indicatorMessage(2, 500, 3);  // Give indication that the numbers are out of bounds
           break;
         }
       } else {
-        indicatorMessage(2, 500, 3);
+        indicatorMessage(2, 500, 3);  // Give indication that the number of bytes in the command is incorrect
         break;
       }
       break;
     case 's':
-      switch (parameters[1]) {
+      switch (parameters[1]) {  // Check second parameter to see what to update
         case 0:
-          EEPROM.update(0, 0);
+          EEPROM.update(0, 0);  // If zero, preform factory reset and alert user to power cycle
           while (true) {
             indicatorMessage(1, 150, 1);
           }
-        default:
+        default:  // Otherwise, set whatever specified parameter to whatever value is given, single digit at the moment
           configParameters[parameters[1]] = parameters[2];
           EEPROM.update(parameters[1], parameters[2]);
-                        break;
+          break;
       }
 
     default:
