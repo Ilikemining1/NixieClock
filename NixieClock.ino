@@ -188,12 +188,32 @@ void configMode(int *parameters, byte bufferCount) {  // Takes a pointer to the 
           rtc.adjust(DateTime(yr, mnth, dy, hr, mn, sc));
           indicatorMessage(1, 300);
         } else {
+          indicatorMessage(2, 500);
           break;
         }
       } else {
+        indicatorMessage(2, 500);
         break;
       }
       break;
+    case 's':
+      switch (parameters[1]) {
+        case 0:
+          EEPROM.update(0, 0);
+          while (true) {
+            indicatorMessage(1, 150);
+          }
+        case 1:
+          if (parameters[2] == 0) {
+            EEPROM.update(1, 0);
+            configParameters[1] = 0;
+          } else {
+            EEPROM.update(1, 1);
+            configParameters[1] = 1;
+          }
+          break;
+      }
+      
     default:
       Serial.println("Invalid Configuration Choice");
       break;
@@ -215,6 +235,19 @@ void indicatorMessage(int combination, int ms) {
       digitalWrite(9, LOW);
       delay(ms);
       digitalWrite(8, HIGH);
+      digitalWrite(9, HIGH);
+      break;
+    case 2:
+      digitalWrite(8, HIGH);
+      digitalWrite(9, LOW);
+      delay(ms);
+      digitalWrite(8, LOW);
+      digitalWrite(9, HIGH);
+      delay(ms);
+      digitalWrite(8, HIGH);
+      digitalWrite(9, LOW);
+      delay(ms);
+      digitalWrite(8, LOW);
       digitalWrite(9, HIGH);
       break;
   }
