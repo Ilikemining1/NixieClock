@@ -68,7 +68,7 @@ void setup() {
   byte configState = EEPROM.read(0); // Check if EEPROM contains config data, aka the first byte is a 1. If not, load the hardcoded defaults
   if (configState == 0) {
     for (int i = 0; i < 8; i++) {
-      EEPROM.write(i, configParameters[i]);  // Write initial config parameters to EEPROM
+      EEPROM.update(i, configParameters[i]);  // Write initial config parameters to EEPROM
     }
     Serial.println("Initial EEPROM Programming Done");
   } else {
@@ -205,7 +205,7 @@ void configMode(int *parameters, byte bufferCount) {  // Takes a pointer to the 
           }
         default:
           configParameters[parameters[1]] = parameters[2];
-          EEPROM.update(parameters[1], parameters[2];
+          EEPROM.update(parameters[1], parameters[2]);
                         break;
       }
 
