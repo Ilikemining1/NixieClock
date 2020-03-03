@@ -134,7 +134,7 @@ void loop() {
     int newOhms = ((-4 / 3) * roomlight) + 1613;  // Do some algebra to find new resistance value
     vcon.setWiper( ((newOhms - wiperResistance) / potValue) * 255);  // Update digital pot value
   }
-  
+
   delay(10);  // Stability delay
 }
 
@@ -214,7 +214,7 @@ void configMode(int *parameters, byte bufferCount) {  // Takes a pointer to the 
           EEPROM.update(parameters[1], parameters[2]);
           break;
       }
-
+      break;
     default:
       Serial.println("Invalid Configuration Choice");
       break;
