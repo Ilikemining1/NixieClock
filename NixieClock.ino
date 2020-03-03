@@ -49,7 +49,7 @@ void setup() {
         }
         configMode(serBuffer, bufferCount);  // Send buffer to the config function
         breakLoop = true;
-        
+
       }
       digitalWrite(8, !(digitalRead(8)));
       digitalWrite(9, !(digitalRead(9)));
@@ -186,13 +186,13 @@ void configMode(int *parameters, byte bufferCount) {  // Takes a pointer to the 
         int sc = (parameters[13] * 10) + parameters[14];
         if ((2000 < yr) && (yr < 2200) && (0 < mnth) && (mnth < 13) && (0 < dy) && (dy < 32) && (-1 < hr) && (hr < 25) && (-1 < mn) && (mn < 60) && (-1 < sc) && (sc < 60)) {  // Bounds Checking
           rtc.adjust(DateTime(yr, mnth, dy, hr, mn, sc));
-          indicatorMessage(1, 300);
+          indicatorMessage(1, 300, 2);
         } else {
-          indicatorMessage(2, 500);
+          indicatorMessage(2, 500, 3);
           break;
         }
       } else {
-        indicatorMessage(2, 500);
+        indicatorMessage(2, 500, 3);
         break;
       }
       break;
@@ -201,54 +201,43 @@ void configMode(int *parameters, byte bufferCount) {  // Takes a pointer to the 
         case 0:
           EEPROM.update(0, 0);
           while (true) {
-            indicatorMessage(1, 150);
+            indicatorMessage(1, 150, 1);
           }
-        case 1:
-          if (parameters[2] == 0) {
-            EEPROM.update(1, 0);
-            configParameters[1] = 0;
-          } else {
-            EEPROM.update(1, 1);
-            configParameters[1] = 1;
-          }
-          break;
+        default:
+          configParameters[parameters[1]] = parameters[2];
+          EEPROM.update(parameters[1], parameters[2];
+                        break;
       }
-      
+
     default:
       Serial.println("Invalid Configuration Choice");
       break;
   }
 }
 
-void indicatorMessage(int combination, int ms) {
-  int pin8 = digitalRead(8);
-  int pin9 = digitalRead(9);
+void indicatorMessage(int combination, int ms, int times) {
+  bool pin8 = digitalRead(8);
+  bool pin9 = digitalRead(9);
   switch (combination) {
     case 1:
-      digitalWrite(8, LOW);
-      digitalWrite(9, LOW);
-      delay(ms);
-      digitalWrite(8, HIGH);
-      digitalWrite(9, HIGH);
-      delay(ms);
-      digitalWrite(8, LOW);
-      digitalWrite(9, LOW);
-      delay(ms);
-      digitalWrite(8, HIGH);
-      digitalWrite(9, HIGH);
+      for (int i = 0; i <= times; i++) {
+        digitalWrite(8, LOW);
+        digitalWrite(9, LOW);
+        delay(ms);
+        digitalWrite(8, HIGH);
+        digitalWrite(9, HIGH);
+        delay(ms);
+      }
       break;
     case 2:
-      digitalWrite(8, HIGH);
-      digitalWrite(9, LOW);
-      delay(ms);
-      digitalWrite(8, LOW);
-      digitalWrite(9, HIGH);
-      delay(ms);
-      digitalWrite(8, HIGH);
-      digitalWrite(9, LOW);
-      delay(ms);
-      digitalWrite(8, LOW);
-      digitalWrite(9, HIGH);
+      for (int i = 0; i <= times; i++) {
+        digitalWrite(8, HIGH);
+        digitalWrite(9, LOW);
+        delay(ms);
+        digitalWrite(8, LOW);
+        digitalWrite(9, HIGH);
+        delay(ms);
+      }
       break;
   }
   digitalWrite(8, pin8);
