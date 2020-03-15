@@ -11,7 +11,7 @@ const float    potValue   = 10000;
 const uint16_t wiperResistance = 80;
 
 // Configuration Stuff
-int configParameters[] = {1, 0, 1, 1, 0, 2, 30, 5}; // Default Config Parameters(Configured, 24 hour time, colon mode, dim by light level, dim by time, date display time, anti tube damage)
+int configParameters[] = {1, 0, 1, 1, 0, 0, 2, 30, 5}; // Default Config Parameters(Configured, 24 hour time, colon mode, dim mode, dim by time start, dim by time end, date display time, anti tube damage)
 
 // Timing Vars
 unsigned long previousMillis = 0;
@@ -68,7 +68,7 @@ void setup() {
   byte configState = EEPROM.read(0); // Check if EEPROM contains config data, aka the first byte is a 1. If not, load the hardcoded defaults
   if (configState == 0) {
     for (int i = 0; i < 8; i++) {
-      EEPROM.update(i, configParameters[i]);  // Write initial config parameters to EEPROM.  Update is used to save necessary EEPROM cycles
+      EEPROM.update(i, configParameters[i]);  // Write initial config parameters to EEPROM.  Update is used to save unnecessary EEPROM cycles
     }
     Serial.println("Initial EEPROM Programming Done");
   } else {
@@ -133,6 +133,12 @@ void loop() {
     int roomlight = analogRead(A0);  // Get analog value
     int newOhms = ((-4 / 3) * roomlight) + 1613;  // Do some algebra to find new resistance value
     vcon.setWiper( ((newOhms - wiperResistance) / potValue) * 255);  // Update digital pot value
+  } else if (configParameters[3] == 2) {
+    if ((now.hour() > configParameters[4]) && (now.hour() < configParameters[5]) {
+      vcon.setWiper( ((1750 - wiperResistance) / potValue) * 255);
+    } else {
+      vcon.setWiper( ((680 - wiperResistance) / potValue) * 255);
+    }
   }
 
   delay(10);  // Stability delay
