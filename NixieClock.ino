@@ -19,8 +19,7 @@ unsigned long previousMillis = 0;
 void setup() {
   Serial.begin(115200); // Serial Init
 
-  pinMode(8, OUTPUT); // Seperator Control Pins
-  pinMode(9, OUTPUT);
+  DDRH = B01100000; // Separator Control Pins
 
   vcon.begin(10); // Digital Pot Init
   vcon.setWiper( ((680 - wiperResistance) / potValue) * 255); // Initial Value of 680 Ohm (170v)
@@ -134,7 +133,7 @@ void loop() {
     int newOhms = ((-4 / 3) * roomlight) + 1613;  // Do some algebra to find new resistance value
     vcon.setWiper( ((newOhms - wiperResistance) / potValue) * 255);  // Update digital pot value
   } else if (configParameters[3] == 2) {
-    if ((now.hour() > configParameters[4]) && (now.hour() < configParameters[5]) {
+    if ((now.hour() > configParameters[4]) && (now.hour() < configParameters[5])) {
       vcon.setWiper( ((1750 - wiperResistance) / potValue) * 255);
     } else {
       vcon.setWiper( ((680 - wiperResistance) / potValue) * 255);
@@ -233,21 +232,17 @@ void indicatorMessage(int combination, int ms, int times) {
   switch (combination) {
     case 1:
       for (int i = 0; i <= times; i++) {
-        digitalWrite(8, LOW);
-        digitalWrite(9, LOW);
+        PORTH = B00000000;
         delay(ms);
-        digitalWrite(8, HIGH);
-        digitalWrite(9, HIGH);
+        PORTH = B01100000;
         delay(ms);
       }
       break;
     case 2:
       for (int i = 0; i <= times; i++) {
-        digitalWrite(8, HIGH);
-        digitalWrite(9, LOW);
+        PORTH = B00100000;
         delay(ms);
-        digitalWrite(8, LOW);
-        digitalWrite(9, HIGH);
+        PORTH = B01000000;
         delay(ms);
       }
       break;
