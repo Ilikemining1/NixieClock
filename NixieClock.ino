@@ -141,8 +141,7 @@ void loop() {
 
   if (configParameters[7] > 0) {  // Check if the frequency of date display is > 0, and if so enable it. (0 = disabled)
     unsigned long currentMillisDate = millis();
-    int parameterSeven = configParameters[7];
-    unsigned long repeatTime = (parameterSeven * 1000);
+    unsigned long repeatTime = (configParameters[7] * pow(10, 3));
     Serial.println(repeatTime);
     if ((currentMillisDate - previousMillisDate) >= repeatTime) {  // Timing Stuff
       bool pin8 = digitalRead(8);  // Save current separator status
