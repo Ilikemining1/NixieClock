@@ -140,8 +140,11 @@ void loop() {
   }
 
   if (configParameters[7] > 0) {  // Check if the frequency of date display is > 0, and if so enable it. (0 = disabled)
-    unsigned long currentMillis = millis();
-    if ((currentMillis - previousMillisDate) >= (configParameters[7] * 1000)) {  // Timing Stuff
+    unsigned long currentMillisDate = millis();
+    Serial.println(currentMillisDate - previousMillisDate);
+    Serial.println((currentMillisDate - previousMillisDate) >= (configParameters[7] * 1000));
+    Serial.println(configParameters[7]);
+    if ((currentMillisDate - previousMillisDate) >= (configParameters[7] * 1000)) {  // Timing Stuff
       bool pin8 = digitalRead(8);  // Save current separator status
       bool pin9 = digitalRead(9);
       PORTH = B01100000;  // Turn separators on
@@ -151,7 +154,7 @@ void loop() {
       SetTube(4, nthdig(0, now.day()));
       SetTube(5, nthdig(1, now.year()));
       SetTube(6, nthdig(0, now.year()));
-      delay(configParameters[8]);  // Hold for date display time
+      delay(configParameters[8] * 1000);  // Hold for date display time
       digitalWrite(8, pin8);  // Set separators back to how they were
       digitalWrite(9, pin9);
       previousMillisDate = millis();  // Reset timer.
