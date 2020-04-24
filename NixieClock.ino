@@ -11,10 +11,11 @@ const float    potValue   = 10000;
 const uint16_t wiperResistance = 80;
 
 // Configuration Stuff
-int configParameters[] = {1, 0, 1, 1, 0, 0, 2, 30, 5}; // Default Config Parameters(Configured, 24 hour time, colon mode, dim mode, dim by time start, dim by time end, date display time, anti tube damage)
+int configParameters[] = {1, 0, 1, 1, 0, 0, 2, 120, 10, 5}; // Default Config Parameters(Configured, 24 hour time, colon mode, dim mode, dim by time start, dim by time end, date display period, date display time, anti tube damage)
 
 // Timing Vars
-unsigned long previousMillis = 0;
+unsigned long previousMillisSep = 0;
+unsigned long previousMillisDate = 0;
 
 void setup() {
   Serial.begin(115200); // Serial Init
@@ -66,23 +67,21 @@ void setup() {
 
   byte configState = EEPROM.read(0); // Check if EEPROM contains config data, aka the first byte is a 1. If not, load the hardcoded defaults
   if (configState == 0) {
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 10; i++) {
       EEPROM.update(i, configParameters[i]);  // Write initial config parameters to EEPROM.  Update is used to save unnecessary EEPROM cycles
     }
     Serial.println("Initial EEPROM Programming Done");
   } else {
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 10; i++) {
       configParameters[i] = EEPROM.read(i); // Load current settings from EEPROM
     }
     Serial.println("Settings Restored from EEPROM");
   }
 
   if (configParameters[2] == 1) {  // If set to solid on mode, turn seperators on fixed
-    digitalWrite(8, HIGH);
-    digitalWrite(9, HIGH);
+    PORTH = B01100000;
   } else if (configParameters[2] == 0) {  // Keep pins from floating
-    digitalWrite(8, LOW);
-    digitalWrite(9, LOW);
+    PORTH = B00000000;
   }
 
 }
@@ -110,10 +109,10 @@ void loop() {
 
   if (configParameters[2] == 2) {  // Timing for toggling seperators.  Counts changes in milliseconds and bases timing on that
     unsigned long currentMillis = millis();
-    if ((currentMillis - previousMillis) >= 1000) {
+    if ((currentMillis - previousMillisSep) >= 1000) {
       digitalWrite(8, !(digitalRead(8)));
       digitalWrite(9, !(digitalRead(9)));
-      previousMillis = millis();
+      previousMillisSep = millis();
     }
   }
 
@@ -137,6 +136,25 @@ void loop() {
       vcon.setWiper( ((1750 - wiperResistance) / potValue) * 255);
     } else {
       vcon.setWiper( ((680 - wiperResistance) / potValue) * 255);
+    }
+  }
+
+  if (configParameters[7] > 0) {  // Check if the frequency of date display is > 0, and if so enable it. (0 = disabled)
+    unsigned long currentMillis = millis();
+    if ((currentMillis - previousMillisDate) >= (configParameters[7] * 1000)) {  // Timing Stuff
+      bool pin8 = digitalRead(8);  // Save current separator status
+      bool pin9 = digitalRead(9);
+      PORTH = B01100000;  // Turn separators on
+      SetTube(1, nthdig(1, now.month()));  // Display date
+      SetTube(2, nthdig(0, now.month()));
+      SetTube(3, nthdig(1, now.day()));
+      SetTube(4, nthdig(0, now.day()));
+      SetTube(5, nthdig(1, now.year()));
+      SetTube(6, nthdig(0, now.year()));
+      delay(configParameters[8]);  // Hold for date display time
+      digitalWrite(8, pin8);  // Set separators back to how they were
+      digitalWrite(9, pin9);
+      previousMillisDate = millis();  // Reset timer.
     }
   }
 
