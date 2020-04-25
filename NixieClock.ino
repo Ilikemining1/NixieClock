@@ -11,7 +11,7 @@ const float    potValue   = 10000;
 const uint16_t wiperResistance = 80;
 
 // Configuration Stuff
-int configParameters[] = {1, 0, 1, 1, 0, 0, 120, 10, 0, 0}; // Default Config Parameters(Configured, 24 hour time, colon mode, dim mode, dim by time start, dim by time end, date display period, date display time, anti tube start, anti tube end)
+int configParameters[] = {1, 0, 1, 1, 20, 7, 2, 10, 0, 0}; // Config Parameters (Configured, 24 hour time, colon mode, dim mode, dim by time start, dim by time end, date display period, date display time, anti tube start, anti tube end)
 
 // Timing Vars
 unsigned long previousMillisSep = 0;
@@ -131,8 +131,8 @@ void loop() {
     int roomlight = analogRead(A0);  // Get analog value
     int newOhms = ((-4 / 3) * roomlight) + 1613;  // Do some algebra to find new resistance value
     vcon.setWiper( ((newOhms - wiperResistance) / potValue) * 255);  // Update digital pot value
-  } else if (configParameters[3] == 2) {
-    if ((now.hour() > configParameters[4]) && (now.hour() < configParameters[5])) {
+  } else if (configParameters[3] == 2) {  // Fixed brightness control based on hour
+    if ((now.hour() > configParameters[4]) || (now.hour() < configParameters[5])) {
       vcon.setWiper( ((1750 - wiperResistance) / potValue) * 255);
     } else {
       vcon.setWiper( ((680 - wiperResistance) / potValue) * 255);
@@ -141,7 +141,7 @@ void loop() {
 
   if (configParameters[6] > 0) {  // Check if the frequency of date display is > 0, and if so enable it. (0 = disabled)
     unsigned long currentMillisDate = millis();
-    unsigned long repeatTime = (configParameters[6] * pow(10, 3)); // Okay, I have no HECKKING idea why I have to do it this way.  Multiplying by 1000 breaks things horribly, so multiplying by 10^3
+    unsigned long repeatTime = ((configParameters[6] * 60) * pow(10, 3)); // Okay, I have no HECKKING idea why I have to do it this way.  Multiplying by 1000 breaks things horribly, so multiplying by 10^3
     if ((currentMillisDate - previousMillisDate) >= repeatTime) {  // Timing Stuff
       bool pin8 = digitalRead(8);  // Save current separator status
       bool pin9 = digitalRead(9);
@@ -206,6 +206,7 @@ int nthdig(int n, int k) {
 
 void configMode(int *parameters, byte bufferCount) {  // Takes a pointer to the array and the length of said array as parameters
   switch (parameters[0]) {  // Check the first int and see if it matches any commands
+
     case 't':
       if (bufferCount == 15) {
         int yr = (parameters[1] * 1000) + (parameters[2] * 100) + (parameters[3] * 10) + parameters[4]; // Single digit to int parsing into vars
@@ -226,19 +227,21 @@ void configMode(int *parameters, byte bufferCount) {  // Takes a pointer to the 
         break;
       }
       break;
+
     case 's':
-      switch (parameters[1]) {  // Check second parameter to see what to update
-        case 0:
-          EEPROM.update(0, 0);  // If zero, preform factory reset and alert user to power cycle
-          while (true) {
-            indicatorMessage(1, 150, 1);
-          }
-        default:  // Otherwise, set whatever specified parameter to whatever value is given, single digit at the moment
-          configParameters[parameters[1]] = parameters[2];
-          EEPROM.update(parameters[1], parameters[2]);
-          break;
+      if (parameters[1] == 0) {
+        EEPROM.update(0, 0);  // If zero, preform factory reset and alert user to power cycle
+        while (true) {
+          indicatorMessage(1, 150, 1);
+        }
+      } else if (parameters[1] >= 4) {
+        configParameters[parameters[1]] = ((parameters[2] * 10) + parameters[3]);
+        EEPROM.update(parameters[1], ((parameters[2] * 10) + parameters[3]));
+      } else {
+        configParameters[parameters[1]] = parameters[2];
+        EEPROM.update(parameters[1], parameters[2]);
       }
-      break;
+      
     default:
       Serial.println("Invalid Configuration Choice");
       break;
