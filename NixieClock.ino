@@ -11,7 +11,7 @@ const float    potValue   = 10000;
 const uint16_t wiperResistance = 80;
 
 // Configuration Stuff
-int configParameters[] = {1, 0, 1, 1, 0, 0, 2, 120, 10, 5}; // Default Config Parameters(Configured, 24 hour time, colon mode, dim mode, dim by time start, dim by time end, date display period, date display time, anti tube damage)
+int configParameters[] = {1, 0, 1, 1, 0, 0, 120, 10, 0, 0}; // Default Config Parameters(Configured, 24 hour time, colon mode, dim mode, dim by time start, dim by time end, date display period, date display time, anti tube start, anti tube end)
 
 // Timing Vars
 unsigned long previousMillisSep = 0;
@@ -139,9 +139,9 @@ void loop() {
     }
   }
 
-  if (configParameters[7] > 0) {  // Check if the frequency of date display is > 0, and if so enable it. (0 = disabled)
+  if (configParameters[6] > 0) {  // Check if the frequency of date display is > 0, and if so enable it. (0 = disabled)
     unsigned long currentMillisDate = millis();
-    unsigned long repeatTime = (configParameters[7] * pow(10, 3)); // Okay, I have no FXXING idea why I have to do it this way.  Multiplying by 1000 breaks things horribly, so multiplying by 10^3
+    unsigned long repeatTime = (configParameters[6] * pow(10, 3)); // Okay, I have no HECKKING idea why I have to do it this way.  Multiplying by 1000 breaks things horribly, so multiplying by 10^3
     if ((currentMillisDate - previousMillisDate) >= repeatTime) {  // Timing Stuff
       bool pin8 = digitalRead(8);  // Save current separator status
       bool pin9 = digitalRead(9);
@@ -152,7 +152,7 @@ void loop() {
       SetTube(4, nthdig(0, now.day()));
       SetTube(5, nthdig(1, now.year()));
       SetTube(6, nthdig(0, now.year()));
-      delay(configParameters[8] * 1000);  // Hold for date display time
+      delay(configParameters[7] * 1000);  // Hold for date display time
       digitalWrite(8, pin8);  // Set separators back to how they were
       digitalWrite(9, pin9);
       previousMillisDate = millis();  // Reset timer.
