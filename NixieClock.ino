@@ -132,7 +132,7 @@ void loop() {
     int newOhms = ((-4 / 3) * roomlight) + 1613;  // Do some algebra to find new resistance value
     vcon.setWiper( ((newOhms - wiperResistance) / potValue) * 255);  // Update digital pot value
   } else if (configParameters[3] == 2) {  // Fixed brightness control based on hour
-    if ((now.hour() > configParameters[4]) || (now.hour() < configParameters[5])) {
+    if ((now.hour() >= configParameters[4]) || (now.hour() < configParameters[5])) {
       vcon.setWiper( ((1750 - wiperResistance) / potValue) * 255);
     } else {
       vcon.setWiper( ((680 - wiperResistance) / potValue) * 255);
@@ -241,7 +241,7 @@ void configMode(int *parameters, byte bufferCount) {  // Takes a pointer to the 
         configParameters[parameters[1]] = parameters[2];
         EEPROM.update(parameters[1], parameters[2]);
       }
-      
+      break;
     default:
       Serial.println("Invalid Configuration Choice");
       break;
