@@ -11,7 +11,7 @@ const float    potValue   = 10000;
 const uint16_t wiperResistance = 80;
 
 // Configuration Stuff
-int configParameters[] = {1, 0, 1, 1, 20, 7, 2, 10, 0, 0}; // Config Parameters (Configured, 24 hour time, colon mode, dim mode, dim by time start, dim by time end, date display period, date display time, anti tube start, anti tube end)
+int configParameters[] = {1, 0, 1, 1, 23, 7, 2, 10, 0, 0}; // Config Parameters (Configured, 24 hour time, colon mode, dim mode, dim by time start, dim by time end, date display period, date display time, anti tube start, anti tube end)
 
 // Timing Vars
 unsigned long previousMillisSep = 0;
@@ -134,6 +134,12 @@ void loop() {
   } else if (configParameters[3] == 2) {  // Fixed brightness control based on hour
     if ((now.hour() >= configParameters[4]) || (now.hour() < configParameters[5])) {
       vcon.setWiper( ((1750 - wiperResistance) / potValue) * 255);
+    } else {
+      vcon.setWiper( ((680 - wiperResistance) / potValue) * 255);
+    }
+  } else if (configParameters[3] == 3) {
+    if ((now.hour() >= configParameters[4]) || (now.hour() < configParameters[5])) {
+      vcon.setWiper( ((10000 - wiperResistance) / potValue) * 255);
     } else {
       vcon.setWiper( ((680 - wiperResistance) / potValue) * 255);
     }
