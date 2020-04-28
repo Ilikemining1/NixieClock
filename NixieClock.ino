@@ -143,6 +143,14 @@ void loop() {
     } else {
       vcon.setWiper( ((680 - wiperResistance) / potValue) * 255);
     }
+  } else if (configParameters[3] == 4) {
+    if ((now.hour() >= configParameters[4]) || (now.hour() < configParameters[5])) {
+      vcon.setWiper( ((10000 - wiperResistance) / potValue) * 255);
+    } else {
+      int roomlight = analogRead(A0);  // Get analog value
+      int newOhms = ((-4 / 3) * roomlight) + 1613;  // Do some algebra to find new resistance value
+      vcon.setWiper( ((newOhms - wiperResistance) / potValue) * 255);  // Update digital pot value
+    }
   }
 
   if (configParameters[6] > 0) {  // Check if the frequency of date display is > 0, and if so enable it. (0 = disabled)
