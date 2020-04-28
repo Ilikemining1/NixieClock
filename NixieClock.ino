@@ -89,23 +89,46 @@ void setup() {
 void loop() {
   DateTime now = rtc.now(); // Get current time from the RTC
 
-  if (now.hour() > 12 && configParameters[1] == 0) {  // Compensates for time from RTC being 24 hour, unless in 24 hour mode
-    int hr = now.hour() - 12;
-    SetTube(1, nthdig(1, hr));
-    SetTube(2, nthdig(0, hr));
-  } else if (now.hour() == 0 && configParameters[1] == 0) {  // Changes 0 to 12 at midnight if not in 24 hour mode
-    SetTube(1, 1);
-    SetTube(2, 2);
+  if ((configParameters[8] != 0) || (configParameters[9] != 0)) {
+    if (!((now.hour() >= configParameters[8]) || (now.hour() < configParameters[9]))) {
+      if (now.hour() > 12 && configParameters[1] == 0) {  // Compensates for time from RTC being 24 hour, unless in 24 hour mode
+        int hr = now.hour() - 12;
+        SetTube(1, nthdig(1, hr));
+        SetTube(2, nthdig(0, hr));
+      } else if (now.hour() == 0 && configParameters[1] == 0) {  // Changes 0 to 12 at midnight if not in 24 hour mode
+        SetTube(1, 1);
+        SetTube(2, 2);
+      } else {
+        SetTube(1, nthdig(1, now.hour()));  // Displays the current hour on the tubes
+        SetTube(2, nthdig(0, now.hour()));
+      }
+
+      SetTube(3, nthdig(1, now.minute())); // Displays the current minute on the tubes
+      SetTube(4, nthdig(0, now.minute()));
+
+      SetTube(5, nthdig(1, now.second())); // Displays the current second on the tubes
+      SetTube(6, nthdig(0, now.second()));
+    }
   } else {
-    SetTube(1, nthdig(1, now.hour()));  // Displays the current hour on the tubes
-    SetTube(2, nthdig(0, now.hour()));
+    if (now.hour() > 12 && configParameters[1] == 0) {  // Compensates for time from RTC being 24 hour, unless in 24 hour mode
+      int hr = now.hour() - 12;
+      SetTube(1, nthdig(1, hr));
+      SetTube(2, nthdig(0, hr));
+    } else if (now.hour() == 0 && configParameters[1] == 0) {  // Changes 0 to 12 at midnight if not in 24 hour mode
+      SetTube(1, 1);
+      SetTube(2, 2);
+    } else {
+      SetTube(1, nthdig(1, now.hour()));  // Displays the current hour on the tubes
+      SetTube(2, nthdig(0, now.hour()));
+    }
+
+    SetTube(3, nthdig(1, now.minute())); // Displays the current minute on the tubes
+    SetTube(4, nthdig(0, now.minute()));
+
+    SetTube(5, nthdig(1, now.second())); // Displays the current second on the tubes
+    SetTube(6, nthdig(0, now.second()));
   }
 
-  SetTube(3, nthdig(1, now.minute())); // Displays the current minute on the tubes
-  SetTube(4, nthdig(0, now.minute()));
-
-  SetTube(5, nthdig(1, now.second())); // Displays the current second on the tubes
-  SetTube(6, nthdig(0, now.second()));
 
   if (configParameters[2] == 2) {  // Timing for toggling seperators.  Counts changes in milliseconds and bases timing on that
     unsigned long currentMillis = millis();
@@ -173,7 +196,7 @@ void loop() {
     }
   }
 
-  if ((configParameters[8] != 0) && (configParameters[9] != 0)) {
+  if ((configParameters[8] != 0) || (configParameters[9] != 0)) {
     if ((now.hour() >= configParameters[8]) || (now.hour() < configParameters[9])) {
       for (int i = 1; i < 7; i++) {
         SetTube(i, now.second());
