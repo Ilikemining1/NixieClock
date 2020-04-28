@@ -173,6 +173,14 @@ void loop() {
     }
   }
 
+  if ((configParameters[8] != 0) && (configParameters[9] != 0)) {
+    if ((now.hour() >= configParameters[8]) || (now.hour() < configParameters[9])) {
+      for (int i = 1; i < 7; i++) {
+        SetTube(i, now.second());
+      }
+    }
+  }
+
   delay(10);  // Stability delay
 }
 
