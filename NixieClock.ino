@@ -11,7 +11,7 @@ const float    potValue   = 10000;
 const uint16_t wiperResistance = 80;
 
 // Configuration Stuff
-int configParameters[] = {1, 0, 1, 1, 23, 7, 2, 10}; // Config Parameters (Configured, 24 hour time, colon mode, dim mode, dim by time start, dim by time end, date display period, date display time, anti tube start, anti tube end)
+int configParameters[] = {1, 0, 1, 1, 23, 7, 2, 10}; // Config Parameters (Configured, 24 hour time, colon mode, dim mode, dim by time start, dim by time end, date display period, date display time)
 
 // Timing Vars
 unsigned long previousMillisSep = 0;
@@ -51,7 +51,7 @@ void setup() {
         breakLoop = true;
 
       }
-      digitalWrite(8, !(digitalRead(8)));
+      digitalWrite(8, !(digitalRead(8)));  // Blink if the RTC battery is dead and needs to be set
       digitalWrite(9, !(digitalRead(9)));
       delay(150);
       if (breakLoop) {
@@ -167,7 +167,7 @@ void loop() {
       SetTube(4, nthdig(0, now.day()));
       SetTube(5, nthdig(1, now.year()));
       SetTube(6, nthdig(0, now.year()));
-      delay(configParameters[7] * 1000);  // Hold for date display time
+      delay(configParameters[7] * 1000);  // Hold for date display time.  For some reason, multiplying by 1000 works great here??
       digitalWrite(8, pin8);  // Set separators back to how they were
       digitalWrite(9, pin9);
       previousMillisDate = millis();  // Reset timer.
@@ -249,24 +249,24 @@ void configMode(int *parameters, byte bufferCount) {  // Takes a pointer to the 
         while (true) {
           indicatorMessage(1, 150, 1);
         }
-      } else if (parameters[1] >= 4) {
+      } else if (parameters[1] >= 4) {  // All parameters after 4 are two digits.  Compensate for that.
         configParameters[parameters[1]] = ((parameters[2] * 10) + parameters[3]);
         EEPROM.update(parameters[1], ((parameters[2] * 10) + parameters[3]));
-      } else {
+      } else { // Set specified parameter to specified value
         configParameters[parameters[1]] = parameters[2];
         EEPROM.update(parameters[1], parameters[2]);
       }
       break;
     default:
-      Serial.println("Invalid Configuration Choice");
+      Serial.println("Invalid Configuration Choice");  // Anything invalid
       break;
   }
 }
 
-void indicatorMessage(int combination, int ms, int times) {
-  bool pin8 = digitalRead(8);
+void indicatorMessage(int combination, int ms, int times) {  // Function for flashing seperators
+  bool pin8 = digitalRead(8); // Get current state
   bool pin9 = digitalRead(9);
-  switch (combination) {
+  switch (combination) {  // Flash pattern for ms time
     case 1:
       for (int i = 0; i <= times; i++) {
         PORTH = B00000000;
@@ -284,6 +284,6 @@ void indicatorMessage(int combination, int ms, int times) {
       }
       break;
   }
-  digitalWrite(8, pin8);
+  digitalWrite(8, pin8);  // Reset pins to how they were
   digitalWrite(9, pin9);
 }
