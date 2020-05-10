@@ -108,6 +108,13 @@ void loop() {
 
       SetTube(5, nthdig(1, now.second())); // Displays the current second on the tubes
       SetTube(6, nthdig(0, now.second()));
+    } else {
+      SetTube(1, nthdig(1, now.second())); 
+      SetTube(2, nthdig(1, now.second()));
+      SetTube(3, nthdig(1, now.second())); 
+      SetTube(4, nthdig(1, now.second()));
+      SetTube(5, nthdig(1, now.second())); 
+      SetTube(6, nthdig(1, now.second()));
     }
   } else {
     if (now.hour() > 12 && configParameters[1] == 0) {  // Compensates for time from RTC being 24 hour, unless in 24 hour mode
