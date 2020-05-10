@@ -11,7 +11,7 @@ const float    potValue   = 10000;
 const uint16_t wiperResistance = 80;
 
 // Configuration Stuff
-int configParameters[] = {1, 0, 1, 1, 23, 7, 2, 10, 0, 0}; // Config Parameters (Configured, 24 hour time, colon mode, dim mode, dim by time start, dim by time end, date display period, date display time, anti tube start, anti tube end)
+int configParameters[] = {1, 0, 1, 1, 23, 7, 2, 10}; // Config Parameters (Configured, 24 hour time, colon mode, dim mode, dim by time start, dim by time end, date display period, date display time, anti tube start, anti tube end)
 
 // Timing Vars
 unsigned long previousMillisSep = 0;
@@ -67,12 +67,12 @@ void setup() {
 
   byte configState = EEPROM.read(0); // Check if EEPROM contains config data, aka the first byte is a 1. If not, load the hardcoded defaults
   if (configState == 0) {
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 8; i++) {
       EEPROM.update(i, configParameters[i]);  // Write initial config parameters to EEPROM.  Update is used to save unnecessary EEPROM cycles
     }
     Serial.println("Initial EEPROM Programming Done");
   } else {
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 8; i++) {
       configParameters[i] = EEPROM.read(i); // Load current settings from EEPROM
     }
     Serial.println("Settings Restored from EEPROM");
@@ -89,9 +89,7 @@ void setup() {
 void loop() {
   DateTime now = rtc.now(); // Get current time from the RTC
 
-  if ((configParameters[8] != 0) || (configParameters[9] != 0)) {
-    if (!((now.hour() >= configParameters[8]) || (now.hour() < configParameters[9]))) {
-      if (now.hour() > 12 && configParameters[1] == 0) {  // Compensates for time from RTC being 24 hour, unless in 24 hour mode
+ if (now.hour() > 12 && configParameters[1] == 0) {  // Compensates for time from RTC being 24 hour, unless in 24 hour mode
         int hr = now.hour() - 12;
         SetTube(1, nthdig(1, hr));
         SetTube(2, nthdig(0, hr));
@@ -108,33 +106,6 @@ void loop() {
 
       SetTube(5, nthdig(1, now.second())); // Displays the current second on the tubes
       SetTube(6, nthdig(0, now.second()));
-    } else {
-      SetTube(1, nthdig(1, now.second())); 
-      SetTube(2, nthdig(1, now.second()));
-      SetTube(3, nthdig(1, now.second())); 
-      SetTube(4, nthdig(1, now.second()));
-      SetTube(5, nthdig(1, now.second())); 
-      SetTube(6, nthdig(1, now.second()));
-    }
-  } else {
-    if (now.hour() > 12 && configParameters[1] == 0) {  // Compensates for time from RTC being 24 hour, unless in 24 hour mode
-      int hr = now.hour() - 12;
-      SetTube(1, nthdig(1, hr));
-      SetTube(2, nthdig(0, hr));
-    } else if (now.hour() == 0 && configParameters[1] == 0) {  // Changes 0 to 12 at midnight if not in 24 hour mode
-      SetTube(1, 1);
-      SetTube(2, 2);
-    } else {
-      SetTube(1, nthdig(1, now.hour()));  // Displays the current hour on the tubes
-      SetTube(2, nthdig(0, now.hour()));
-    }
-
-    SetTube(3, nthdig(1, now.minute())); // Displays the current minute on the tubes
-    SetTube(4, nthdig(0, now.minute()));
-
-    SetTube(5, nthdig(1, now.second())); // Displays the current second on the tubes
-    SetTube(6, nthdig(0, now.second()));
-  }
 
 
   if (configParameters[2] == 2) {  // Timing for toggling seperators.  Counts changes in milliseconds and bases timing on that
@@ -200,14 +171,6 @@ void loop() {
       digitalWrite(8, pin8);  // Set separators back to how they were
       digitalWrite(9, pin9);
       previousMillisDate = millis();  // Reset timer.
-    }
-  }
-
-  if ((configParameters[8] != 0) || (configParameters[9] != 0)) {
-    if ((now.hour() >= configParameters[8]) || (now.hour() < configParameters[9])) {
-      for (int i = 1; i < 7; i++) {
-        SetTube(i, now.second());
-      }
     }
   }
 
