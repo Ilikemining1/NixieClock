@@ -232,13 +232,10 @@ void configMode(int *parameters, byte bufferCount) {  // Takes a pointer to the 
         int sc = (parameters[13] * 10) + parameters[14];
         if ((2000 < yr) && (yr < 2200) && (0 < mnth) && (mnth < 13) && (0 < dy) && (dy < 32) && (-1 < hr) && (hr < 25) && (-1 < mn) && (mn < 60) && (-1 < sc) && (sc < 60)) {  // Bounds Checking
           rtc.adjust(DateTime(yr, mnth, dy, hr, mn, sc));  // Update the RTC if numbers are within bounds
-          indicatorMessage(1, 300, 2);  // Give indication that the time was updated
         } else {
-          indicatorMessage(2, 500, 3);  // Give indication that the numbers are out of bounds
           break;
         }
       } else {
-        indicatorMessage(2, 500, 3);  // Give indication that the number of bytes in the command is incorrect
         break;
       }
       break;
